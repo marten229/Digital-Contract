@@ -1,0 +1,46 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"details": "Minimal reentrancy guard (inspired by OpenZeppelin's ReentrancyGuard)",
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"digital_contract.sol": "ReentrancyGuard"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"digital_contract.sol": {
+			"keccak256": "0x4df2f6d6509c17a1960b4aa6a1d2a61dd7d98335e422bdbdcf5fe639ea04f1e9",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://86d3c1a134c062e790d1f1154701b0c514a73eb5e2d8bf01ac9119777c11858e",
+				"dweb:/ipfs/QmeUrxDk6d7ZTBvxyjuf5uAUeg73DkPyX3qxmmtdfW3CJF"
+			]
+		}
+	},
+	"version": 1
+}
