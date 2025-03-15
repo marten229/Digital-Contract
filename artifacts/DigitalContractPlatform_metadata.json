@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.26+commit.8a97fa7a"
+		"version": "0.8.21+commit.d9974bed"
 	},
 	"language": "Solidity",
 	"output": {
@@ -41,6 +41,25 @@
 					}
 				],
 				"name": "ContractSigned",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "FundsWithdrawn",
 				"type": "event"
 			},
 			{
@@ -92,7 +111,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "",
+						"name": "contractId",
 						"type": "uint256"
 					}
 				],
@@ -101,6 +120,11 @@
 					{
 						"internalType": "uint256",
 						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
 						"type": "uint256"
 					},
 					{
@@ -114,19 +138,14 @@
 						"type": "address"
 					},
 					{
-						"internalType": "string",
-						"name": "contractIPFSHash",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "amount",
-						"type": "uint256"
-					},
-					{
 						"internalType": "enum DigitalContractPlatform.ContractStatus",
 						"name": "status",
 						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "contractIPFSHash",
+						"type": "string"
 					}
 				],
 				"stateMutability": "view",
@@ -197,7 +216,7 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "",
+						"name": "account",
 						"type": "address"
 					}
 				],
@@ -242,22 +261,22 @@
 			"kind": "user",
 			"methods": {
 				"confirmCompletion(uint256)": {
-					"notice": "The creator confirms contract completion. Instead of immediately transferring funds, the amount is recorded for withdrawal by the counterparty."
+					"notice": "Der Ersteller bestätigt die Vertragserfüllung. Der Betrag wird nicht sofort überwiesen, sondern für eine spätere Abhebung durch die Gegenpartei verbucht."
 				},
 				"createContract(address,string,uint256)": {
-					"notice": "Create a new contract. The creator must send the exact amount."
+					"notice": "Erstelle einen neuen Vertrag. Der Ersteller muss den exakten Betrag senden."
 				},
 				"getContractIPFSHash(uint256)": {
-					"notice": "Retrieve the IPFS hash associated with a contract."
+					"notice": "Gibt den IPFS-Hash eines Vertrags zurück."
 				},
 				"getContractStatus(uint256)": {
-					"notice": "Retrieve the current status of a contract."
+					"notice": "Gibt den aktuellen Status eines Vertrags zurück."
 				},
 				"signContract(uint256)": {
-					"notice": "The designated counterparty signs the contract."
+					"notice": "Die vorgesehene Gegenpartei unterzeichnet den Vertrag."
 				},
 				"withdrawFunds()": {
-					"notice": "Allows users to withdraw funds owed to them."
+					"notice": "Ermöglicht es Nutzern, ihnen zustehende Gelder abzuheben."
 				}
 			},
 			"version": 1
@@ -267,7 +286,7 @@
 		"compilationTarget": {
 			"digital_contract.sol": "DigitalContractPlatform"
 		},
-		"evmVersion": "cancun",
+		"evmVersion": "shanghai",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -280,11 +299,11 @@
 	},
 	"sources": {
 		"digital_contract.sol": {
-			"keccak256": "0x4df2f6d6509c17a1960b4aa6a1d2a61dd7d98335e422bdbdcf5fe639ea04f1e9",
+			"keccak256": "0xb47dd82f93224556ad8da5c39d0a75b449890fc715e8ad85f9964730d36a6177",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://86d3c1a134c062e790d1f1154701b0c514a73eb5e2d8bf01ac9119777c11858e",
-				"dweb:/ipfs/QmeUrxDk6d7ZTBvxyjuf5uAUeg73DkPyX3qxmmtdfW3CJF"
+				"bzz-raw://7d713ea2a2de8e275854312805d432ecdaafe2cccce49c3a23f7e6462dcc9be0",
+				"dweb:/ipfs/QmQWHAZL29MrA22j2LBrhgQTiVD9iLxDoyDap7hmVt2D4A"
 			]
 		}
 	},
