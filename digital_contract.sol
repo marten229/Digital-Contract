@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity 0.8.21; 
 
-/// @dev Minimaler Reentrancy Guard (inspiriert von OpenZeppelin's ReentrancyGuard)
 abstract contract ReentrancyGuard {
     uint256 private constant _NOT_ENTERED = 1;
     uint256 private constant _ENTERED = 2;
@@ -13,7 +12,7 @@ abstract contract ReentrancyGuard {
     }
     
     modifier nonReentrant() {
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+        require(_status != _ENTERED, "Reentrant call");
         _status = _ENTERED;
         _;
         _status = _NOT_ENTERED;
@@ -26,12 +25,12 @@ contract ContractManager is ReentrancyGuard {
     struct ManagedContract {
         uint256 id;
         uint256 amount;
-        address payable creator;       // Käufer
-        address payable counterparty;  // Verkäufer
+        address payable creator;
+        address payable counterparty;
         ContractStatus status;
         string contractIPFSHash;
-        bool deliveryRequired;
         bytes32 deliveryTrackingHash;
+        bool deliveryRequired;
         bool deliveryConfirmed;
         bool deliveryApprovedByCreator;
     }
@@ -43,10 +42,12 @@ contract ContractManager is ReentrancyGuard {
 
     event ContractCreated(uint256 indexed contractId, address creator, address counterparty);
     event ContractSigned(uint256 indexed contractId);
+    event TrackingHashSet(uint256 indexed contractId, bytes32 trackingHash);
+    event DeliveryConfirmed(uint256 indexed contractId);
+    event DeliveryApproved(uint256 indexed contractId);
     event PaymentReleased(uint256 indexed contractId, uint256 amount);
     event FundsWithdrawn(address indexed account, uint256 amount);
     event ContractDeactivated(uint256 indexed contractId);
-    event TrackingHashSet(uint256 indexed contractId, bytes32 trackingHash);
 
     modifier onlyCreator(uint256 _contractId) {
         require(msg.sender == contracts[_contractId].creator, "Not creator");
@@ -70,94 +71,97 @@ contract ContractManager is ReentrancyGuard {
         require(msg.value == _amount, "ETH mismatch");
 
         contractCounter++;
-        ManagedContract storage newContract = contracts[contractCounter];
-        newContract.id = contractCounter;
-        newContract.amount = _amount;
-        newContract.creator = payable(msg.sender);
-        newContract.counterparty = _counterparty;
-        newContract.contractIPFSHash = _contractIPFSHash;
-        newContract.status = ContractStatus.Created;
+        contracts[contractCounter] = ManagedContract({
+            id: contractCounter,
+            amount: _amount,
+            creator: payable(msg.sender),
+            counterparty: _counterparty,
+            status: ContractStatus.Created,
+            contractIPFSHash: _contractIPFSHash,
+            deliveryTrackingHash: 0,
+            deliveryRequired: false,
+            deliveryConfirmed: false,
+            deliveryApprovedByCreator: false
+        });
 
         emit ContractCreated(contractCounter, msg.sender, _counterparty);
     }
 
     function signContract(uint256 _contractId) public onlyCounterparty(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.status == ContractStatus.Created, "Contract not in Created state");
+        require(mContract.status == ContractStatus.Created, "Not Created");
 
         mContract.status = ContractStatus.Signed;
         emit ContractSigned(_contractId);
     }
 
-    /// @notice Verkäufer (counterparty) setzt die Trackingnummer nach Signatur
     function setDeliveryTracking(uint256 _contractId, string memory _trackingNumber) public onlyCounterparty(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.status == ContractStatus.Signed, "Contract must be Signed");
-        require(!mContract.deliveryRequired, "Tracking already set");
+        require(mContract.status == ContractStatus.Signed, "Not Signed");
+        require(!mContract.deliveryRequired, "Already set");
 
-        mContract.deliveryTrackingHash = keccak256(abi.encodePacked(_trackingNumber));
+        mContract.deliveryTrackingHash = keccak256(abi.encode(_trackingNumber));
         mContract.deliveryRequired = true;
 
         emit TrackingHashSet(_contractId, mContract.deliveryTrackingHash);
     }
 
-    /// @notice Oracle bestätigt erfolgreiche Zustellung durch DHL
     function confirmDeliveryByOracle(uint256 _contractId, string memory _trackingNumber) public nonReentrant {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.deliveryRequired, "No delivery required");
-        require(mContract.status == ContractStatus.Signed, "Contract not in Signed state");
+        require(mContract.deliveryRequired, "No delivery");
+        require(mContract.status == ContractStatus.Signed, "Not Signed");
         require(!mContract.deliveryConfirmed, "Already confirmed");
 
         require(
-            mContract.deliveryTrackingHash == keccak256(abi.encodePacked(_trackingNumber)),
-            "Tracking number mismatch"
+            mContract.deliveryTrackingHash == keccak256(abi.encode(_trackingNumber)),
+            "Hash mismatch"
         );
 
         mContract.deliveryConfirmed = true;
+        emit DeliveryConfirmed(_contractId);
     }
 
-    /// @notice Käufer (creator) bestätigt, dass der Paketinhalt korrekt ist
     function approveDeliveryAsCreator(uint256 _contractId) public onlyCreator(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.deliveryRequired, "No delivery required");
-        require(mContract.status == ContractStatus.Signed, "Contract not in Signed state");
-        require(mContract.deliveryConfirmed, "Delivery not yet confirmed");
+        require(mContract.deliveryRequired, "No delivery");
+        require(mContract.status == ContractStatus.Signed, "Not Signed");
+        require(mContract.deliveryConfirmed, "Delivery missing");
         require(!mContract.deliveryApprovedByCreator, "Already approved");
 
         mContract.deliveryApprovedByCreator = true;
         mContract.status = ContractStatus.Completed;
-        pendingWithdrawals[mContract.counterparty] += mContract.amount;
+        pendingWithdrawals[mContract.counterparty] = pendingWithdrawals[mContract.counterparty] + mContract.amount;
 
+        emit DeliveryApproved(_contractId);
         emit PaymentReleased(_contractId, mContract.amount);
     }
 
-    /// @notice Nur für Verträge ohne Lieferung
     function confirmCompletion(uint256 _contractId) public nonReentrant onlyCreator(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.status == ContractStatus.Signed, "Contract not signed");
+        require(mContract.status == ContractStatus.Signed, "Not Signed");
         require(!mContract.deliveryRequired, "Use delivery flow");
 
         mContract.status = ContractStatus.Completed;
-        pendingWithdrawals[mContract.counterparty] += mContract.amount;
+        pendingWithdrawals[mContract.counterparty] = pendingWithdrawals[mContract.counterparty] + mContract.amount;
 
         emit PaymentReleased(_contractId, mContract.amount);
     }
 
     function withdrawFunds() public nonReentrant {
         uint256 amount = pendingWithdrawals[msg.sender];
-        require(amount > 0, "No funds available");
+        require(amount != 0, "No funds");
 
-        pendingWithdrawals[msg.sender] = 0;
+        delete pendingWithdrawals[msg.sender];
         (bool success, ) = payable(msg.sender).call{value: amount}("");
-        require(success, "Withdrawal failed");
+        require(success, "Withdraw failed");
 
         emit FundsWithdrawn(msg.sender, amount);
     }
 
     function deactivateContract(uint256 _contractId) public onlyCreator(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.status != ContractStatus.Completed, "Cannot deactivate completed contract");
-        require(mContract.status != ContractStatus.Cancelled, "Contract already deactivated");
+        require(mContract.status != ContractStatus.Completed, "Already completed");
+        require(mContract.status != ContractStatus.Cancelled, "Already cancelled");
 
         mContract.contractIPFSHash = "";
         mContract.status = ContractStatus.Cancelled;

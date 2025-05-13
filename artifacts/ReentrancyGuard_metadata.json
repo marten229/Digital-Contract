@@ -6,7 +6,6 @@
 	"output": {
 		"abi": [],
 		"devdoc": {
-			"details": "Minimaler Reentrancy Guard (inspiriert von OpenZeppelin's ReentrancyGuard)",
 			"kind": "dev",
 			"methods": {},
 			"version": 1
@@ -34,11 +33,11 @@
 	},
 	"sources": {
 		"digital_contract.sol": {
-			"keccak256": "0xb47dd82f93224556ad8da5c39d0a75b449890fc715e8ad85f9964730d36a6177",
+			"keccak256": "0x28ccf036d2855991b715689e231248c94c06170436fc11cb6f17df27df3aa6a7",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://7d713ea2a2de8e275854312805d432ecdaafe2cccce49c3a23f7e6462dcc9be0",
-				"dweb:/ipfs/QmQWHAZL29MrA22j2LBrhgQTiVD9iLxDoyDap7hmVt2D4A"
+				"bzz-raw://09a3449f8eb11ac613afbb7746283d6ef689efa7b1ab794a9095a6795f384f39",
+				"dweb:/ipfs/QmTZZMRDMqQhNJqALsNrFHwUSofh21uhsS2FJqju18azhr"
 			]
 		}
 	},
