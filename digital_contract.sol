@@ -17,7 +17,7 @@ contract ContractManager is ReentrancyGuard {
         bool deliveryRequired;
         bool deliveryConfirmed;
         bool deliveryApprovedByCreator;
-        uint256 oracleConfirmationTime; // << hinzugefügt
+        uint256 oracleConfirmationTime;
     }
 
     address public oracle;

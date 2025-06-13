@@ -516,11 +516,10 @@
 			]
 		},
 		"digital_contract.sol": {
-			"keccak256": "0xcf93149e83b01d6898fae7f8399088ba1dea2131c33dbbb62cadadda30c429ee",
-			"license": "MIT",
+			"keccak256": "0xf62fadac7c4f5d725dce90d4a354c3c187a55e59075cc1e3fea1693c822b96b1",
 			"urls": [
-				"bzz-raw://ea51300ce6e024ff6ec68cd87558a085f01b8a7dec395f9f3198d839142b90bf",
-				"dweb:/ipfs/QmahPh6Q6z3oVed9nVuK5tE5p43XJLj9CG6akFggy9x9h6"
+				"bzz-raw://f4dbf26c632b0539e1c26a34b6b8bae2daac883e55a5e408abbb6aa2449301c9",
+				"dweb:/ipfs/QmU6YEMWLqx7jY7WRCXSwmt6s88tFMqo7YNYSLwNLbhwRQ"
 			]
 		}
 	},
