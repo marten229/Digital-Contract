@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.21+commit.d9974bed"
+		"version": "0.8.30+commit.73712a01"
 	},
 	"language": "Solidity",
 	"output": {
@@ -87,6 +87,12 @@
 				"inputs": [
 					{
 						"indexed": true,
+						"internalType": "uint256",
+						"name": "contractId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
 						"internalType": "address",
 						"name": "account",
 						"type": "address"
@@ -106,9 +112,28 @@
 				"inputs": [
 					{
 						"indexed": true,
+						"internalType": "address",
+						"name": "oracle",
+						"type": "address"
+					}
+				],
+				"name": "OracleSet",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
 						"internalType": "uint256",
 						"name": "contractId",
 						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
 					},
 					{
 						"indexed": false,
@@ -255,6 +280,11 @@
 						"internalType": "bool",
 						"name": "deliveryApprovedByCreator",
 						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "oracleConfirmationTime",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -304,6 +334,19 @@
 						"type": "uint256"
 					}
 				],
+				"name": "forceApproveDeliveryAfterTimeout",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_contractId",
+						"type": "uint256"
+					}
+				],
 				"name": "getContractIPFSHash",
 				"outputs": [
 					{
@@ -329,6 +372,32 @@
 						"internalType": "enum ContractManager.ContractStatus",
 						"name": "",
 						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "oracle",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "oracleSet",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -374,6 +443,19 @@
 			{
 				"inputs": [
 					{
+						"internalType": "address",
+						"name": "_oracle",
+						"type": "address"
+					}
+				],
+				"name": "setOracle",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "uint256",
 						"name": "_contractId",
 						"type": "uint256"
@@ -385,8 +467,14 @@
 				"type": "function"
 			},
 			{
-				"inputs": [],
-				"name": "withdrawFunds",
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_contractId",
+						"type": "uint256"
+					}
+				],
+				"name": "withdrawFundsFrom",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -407,7 +495,7 @@
 		"compilationTarget": {
 			"digital_contract.sol": "ContractManager"
 		},
-		"evmVersion": "shanghai",
+		"evmVersion": "prague",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -419,12 +507,20 @@
 		"remappings": []
 	},
 	"sources": {
-		"digital_contract.sol": {
-			"keccak256": "0x28ccf036d2855991b715689e231248c94c06170436fc11cb6f17df27df3aa6a7",
+		"@openzeppelin/contracts/security/ReentrancyGuard.sol": {
+			"keccak256": "0xa535a5df777d44e945dd24aa43a11e44b024140fc340ad0dfe42acf4002aade1",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://09a3449f8eb11ac613afbb7746283d6ef689efa7b1ab794a9095a6795f384f39",
-				"dweb:/ipfs/QmTZZMRDMqQhNJqALsNrFHwUSofh21uhsS2FJqju18azhr"
+				"bzz-raw://41319e7f621f2dc3733511332c4fd032f8e32ad2aa7fd6f665c19741d9941a34",
+				"dweb:/ipfs/QmcYR3bd862GD1Bc7jwrU9bGxrhUu5na1oP964bDCu2id1"
+			]
+		},
+		"digital_contract.sol": {
+			"keccak256": "0xcf93149e83b01d6898fae7f8399088ba1dea2131c33dbbb62cadadda30c429ee",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://ea51300ce6e024ff6ec68cd87558a085f01b8a7dec395f9f3198d839142b90bf",
+				"dweb:/ipfs/QmahPh6Q6z3oVed9nVuK5tE5p43XJLj9CG6akFggy9x9h6"
 			]
 		}
 	},
