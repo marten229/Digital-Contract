@@ -258,7 +258,7 @@
 					},
 					{
 						"internalType": "string",
-						"name": "contractIPFSHash",
+						"name": "contractHash",
 						"type": "string"
 					},
 					{
@@ -280,11 +280,6 @@
 						"internalType": "bool",
 						"name": "deliveryApprovedByCreator",
 						"type": "bool"
-					},
-					{
-						"internalType": "uint256",
-						"name": "oracleConfirmationTime",
-						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -299,7 +294,7 @@
 					},
 					{
 						"internalType": "string",
-						"name": "_contractIPFSHash",
+						"name": "_contractHash",
 						"type": "string"
 					},
 					{
@@ -334,20 +329,7 @@
 						"type": "uint256"
 					}
 				],
-				"name": "forceApproveDeliveryAfterTimeout",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_contractId",
-						"type": "uint256"
-					}
-				],
-				"name": "getContractIPFSHash",
+				"name": "getContractHash",
 				"outputs": [
 					{
 						"internalType": "string",
@@ -516,10 +498,11 @@
 			]
 		},
 		"digital_contract.sol": {
-			"keccak256": "0xf62fadac7c4f5d725dce90d4a354c3c187a55e59075cc1e3fea1693c822b96b1",
+			"keccak256": "0xaab4ebbc862b020e38fd61470561814790bb8fc654897b9efd73e926d3e51aa3",
+			"license": "MIT",
 			"urls": [
-				"bzz-raw://f4dbf26c632b0539e1c26a34b6b8bae2daac883e55a5e408abbb6aa2449301c9",
-				"dweb:/ipfs/QmU6YEMWLqx7jY7WRCXSwmt6s88tFMqo7YNYSLwNLbhwRQ"
+				"bzz-raw://03eb0bc0f7ed0577e15d9b27fac73bf6564506429d5d4a698f38dede4188ac6c",
+				"dweb:/ipfs/QmPFwUrBLdjjXiS9k2YMcJBPK9omWfG8GR8qnH2ZBugh7X"
 			]
 		}
 	},

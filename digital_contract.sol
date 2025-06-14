@@ -12,12 +12,11 @@ contract ContractManager is ReentrancyGuard {
         address payable creator;
         address payable counterparty;
         ContractStatus status;
-        string contractIPFSHash;
+        string contractHash;
         bytes32 deliveryTrackingHash;
         bool deliveryRequired;
         bool deliveryConfirmed;
         bool deliveryApprovedByCreator;
-        uint256 oracleConfirmationTime;
     }
 
     address public oracle;
@@ -57,19 +56,21 @@ contract ContractManager is ReentrancyGuard {
         require(!oracleSet, "Oracle already set");
         require(_oracle != address(0), "Invalid oracle");
 
-        oracle = _oracle;
-        oracleSet = true;
-        emit OracleSet(_oracle);
+        if (!oracleSet) {
+            oracle = _oracle;
+            oracleSet = true;
+            emit OracleSet(_oracle);
+        }
     }
 
     function createContract(
         address payable _counterparty,
-        string memory _contractIPFSHash,
+        string memory _contractHash,
         uint256 _amount
     ) public payable {
         require(_counterparty != address(0), "0 addr not allowed");
         require(msg.value == _amount, "ETH mismatch");
-        require(bytes(_contractIPFSHash).length > 10, "Invalid IPFS hash");
+        require(bytes(_contractHash).length > 10, "Invalid contract hash");
 
         contractCounter++;
         ManagedContract storage newContract = contracts[contractCounter];
@@ -78,7 +79,7 @@ contract ContractManager is ReentrancyGuard {
         newContract.creator = payable(msg.sender);
         newContract.counterparty = _counterparty;
         newContract.status = ContractStatus.Created;
-        newContract.contractIPFSHash = _contractIPFSHash;
+        newContract.contractHash = _contractHash;
 
         emit ContractCreated(contractCounter, msg.sender, _counterparty);
     }
@@ -114,8 +115,6 @@ contract ContractManager is ReentrancyGuard {
         );
 
         mContract.deliveryConfirmed = true;
-        mContract.oracleConfirmationTime = block.timestamp;
-
         emit DeliveryConfirmed(_contractId);
     }
 
@@ -134,29 +133,13 @@ contract ContractManager is ReentrancyGuard {
         emit PaymentReleased(_contractId, mContract.counterparty, mContract.amount);
     }
 
-    function forceApproveDeliveryAfterTimeout(uint256 _contractId) public nonReentrant onlyCounterparty(_contractId) {
-        ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.deliveryRequired, "No delivery");
-        require(mContract.status == ContractStatus.Signed, "Not Signed");
-        require(mContract.deliveryConfirmed, "Not confirmed");
-        require(!mContract.deliveryApprovedByCreator, "Already approved");
-        require(block.timestamp >= mContract.oracleConfirmationTime + 7 days, "Timeout not reached");
-
-        mContract.deliveryApprovedByCreator = true;
-        mContract.status = ContractStatus.Completed;
-        pendingWithdrawals[mContract.counterparty] = pendingWithdrawals[mContract.counterparty] + mContract.amount;
-
-        emit DeliveryApproved(_contractId);
-        emit PaymentReleased(_contractId, mContract.counterparty, mContract.amount);
-    }
-
     function confirmCompletion(uint256 _contractId) public nonReentrant onlyCreator(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
         require(mContract.status == ContractStatus.Signed, "Not Signed");
         require(!mContract.deliveryRequired, "Use delivery flow");
 
         mContract.status = ContractStatus.Completed;
-        pendingWithdrawals[mContract.counterparty] += mContract.amount;
+        pendingWithdrawals[mContract.counterparty] = pendingWithdrawals[mContract.counterparty] + mContract.amount;
 
         emit PaymentReleased(_contractId, mContract.counterparty, mContract.amount);
     }
@@ -167,9 +150,9 @@ contract ContractManager is ReentrancyGuard {
         require(mContract.counterparty == msg.sender, "Not recipient");
 
         uint256 amount = mContract.amount;
-        require(pendingWithdrawals[msg.sender] >= amount, "No balance");
+        require(pendingWithdrawals[msg.sender] != 0, "No balance");
 
-        pendingWithdrawals[msg.sender] -= amount;
+        pendingWithdrawals[msg.sender] = pendingWithdrawals[msg.sender] - amount;
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         require(success, "Withdraw failed");
 
@@ -181,7 +164,8 @@ contract ContractManager is ReentrancyGuard {
         require(mContract.status != ContractStatus.Completed, "Already completed");
         require(mContract.status != ContractStatus.Cancelled, "Already cancelled");
 
-        mContract.contractIPFSHash = "";
+        mContract.contractHash = "";
+        mContract.deliveryTrackingHash = "";
         mContract.status = ContractStatus.Cancelled;
 
         emit ContractDeactivated(_contractId);
@@ -191,7 +175,7 @@ contract ContractManager is ReentrancyGuard {
         return contracts[_contractId].status;
     }
 
-    function getContractIPFSHash(uint256 _contractId) public view returns (string memory) {
-        return contracts[_contractId].contractIPFSHash;
+    function getContractHash(uint256 _contractId) public view returns (string memory) {
+        return contracts[_contractId].contractHash;
     }
 }
