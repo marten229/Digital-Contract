@@ -161,7 +161,6 @@ contract ContractManager is ReentrancyGuard {
 
     function deactivateContract(uint256 _contractId) public onlyCreator(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.status != ContractStatus.Completed, "Already completed");
         require(mContract.status != ContractStatus.Cancelled, "Already cancelled");
 
         mContract.contractHash = "";
