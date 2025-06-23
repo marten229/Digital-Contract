@@ -270,16 +270,6 @@
 						"internalType": "bool",
 						"name": "deliveryRequired",
 						"type": "bool"
-					},
-					{
-						"internalType": "bool",
-						"name": "deliveryConfirmed",
-						"type": "bool"
-					},
-					{
-						"internalType": "bool",
-						"name": "deliveryApprovedByCreator",
-						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -498,11 +488,11 @@
 			]
 		},
 		"digital_contract.sol": {
-			"keccak256": "0x4b6045c4bde4908aafba32ea9fd60a402571b208a44a2146c1275e2182350a13",
+			"keccak256": "0x767c6ab44d68f5d0f8a93ce1ed722656c1f2316417eb9fe346d5cbeb753679b4",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://fa5d67bbcdf5503f482bdc374e1e324ae7733b6a1b0a7bf4e937bb69ca30596a",
-				"dweb:/ipfs/QmQTTcKiEw4up4QURKST75jH566JqNDd3Rxu34ZXiCXj5s"
+				"bzz-raw://d020ba70ace2593e749b75493623d181f31f11d889d04d9510cfd289e8c50719",
+				"dweb:/ipfs/QmaewipMqh6pe6NRH2L9FrmMr6zfWDM9QqHNhW5jukND2G"
 			]
 		}
 	},
