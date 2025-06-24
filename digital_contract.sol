@@ -134,7 +134,7 @@ contract ContractManager is ReentrancyGuard {
         emit PaymentReleased(_contractId, mContract.counterparty, mContract.amount);
     }
 
-    function confirmCompletion(uint256 _contractId) public nonReentrant onlyCreator(_contractId) {
+    function confirmCompletion(uint256 _contractId) public onlyCreator(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
         require(mContract.status == ContractStatus.Signed, "Not signed");
         require(!mContract.deliveryRequired, "Delivery flow required");
