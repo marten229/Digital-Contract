@@ -109,7 +109,7 @@ contract ContractManager is ReentrancyGuard {
         emit TrackingHashSet(_contractId, mContract.deliveryTrackingHash);
     }
 
-    function confirmDeliveryByOracle(uint256 _contractId, string memory _trackingNumber) public nonReentrant onlyOracle {
+    function confirmDeliveryByOracle(uint256 _contractId, string memory _trackingNumber) public onlyOracle {
         ManagedContract storage mContract = contracts[_contractId];
         require(mContract.status == ContractStatus.DeliverySet, "Wrong status");
         require(mContract.deliveryRequired, "No delivery");
