@@ -198,9 +198,9 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "string",
-						"name": "_trackingNumber",
-						"type": "string"
+						"internalType": "bytes32",
+						"name": "_trackingNumberHash",
+						"type": "bytes32"
 					}
 				],
 				"name": "confirmDeliveryByOracle",
@@ -257,9 +257,9 @@
 						"type": "uint8"
 					},
 					{
-						"internalType": "string",
+						"internalType": "bytes32",
 						"name": "contractHash",
-						"type": "string"
+						"type": "bytes32"
 					},
 					{
 						"internalType": "bytes32",
@@ -283,9 +283,9 @@
 						"type": "address"
 					},
 					{
-						"internalType": "string",
+						"internalType": "bytes32",
 						"name": "_contractHash",
-						"type": "string"
+						"type": "bytes32"
 					},
 					{
 						"internalType": "uint256",
@@ -309,25 +309,6 @@
 				"name": "deactivateContract",
 				"outputs": [],
 				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_contractId",
-						"type": "uint256"
-					}
-				],
-				"name": "getContractHash",
-				"outputs": [
-					{
-						"internalType": "string",
-						"name": "",
-						"type": "string"
-					}
-				],
-				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -402,9 +383,9 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "string",
-						"name": "_trackingNumber",
-						"type": "string"
+						"internalType": "bytes32",
+						"name": "_trackingNumberHash",
+						"type": "bytes32"
 					}
 				],
 				"name": "setDeliveryTracking",
@@ -488,11 +469,11 @@
 			]
 		},
 		"digital_contract.sol": {
-			"keccak256": "0x94681acf562395a01a9a817f7b672db42e2a07f7b75f2c83091be6a239bddd8e",
+			"keccak256": "0x9f6084a535da7991724096911f0158da29994a35ce97e172126206ccb6d12039",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://6c737ae56ed6525301f1d779d33afd829369466fcd073bb73aa8d702db88f58d",
-				"dweb:/ipfs/QmZi241WC7nVysQJakocYGfYMKqZY1pHytuxHMcT3chB4N"
+				"bzz-raw://fe5243da961365a075c388bceb02431c77cf6129795d8c8a644f2d01781b50f9",
+				"dweb:/ipfs/QmZYg1kfFY7m9ERDomqNVngcgPf8evPPi3KPfhutgmawRB"
 			]
 		}
 	},
