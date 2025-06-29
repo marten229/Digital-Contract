@@ -156,9 +156,10 @@ contract ContractManager is ReentrancyGuard {
         require(pendingWithdrawals[msg.sender] >= amount, "No balance");
 
         pendingWithdrawals[msg.sender] -= amount;
-        payable(msg.sender).transfer(amount);
 
         mContract.status = ContractStatus.Completed;
+
+        payable(msg.sender).transfer(amount);
 
         emit FundsWithdrawn(_contractId, msg.sender, amount);
     }
