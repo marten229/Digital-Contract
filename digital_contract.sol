@@ -164,9 +164,9 @@ contract ContractManager is ReentrancyGuard {
         emit FundsWithdrawn(_contractId, msg.sender, amount);
     }
 
-    function deactivateContract(uint256 _contractId) public onlyCreator(_contractId) {
+    function deactivateContract(uint256 _contractId) public onlyCounterparty(_contractId) onlyCreator(_contractId) {
         ManagedContract storage mContract = contracts[_contractId];
-        require(mContract.status != ContractStatus.Completed, "Already completed");
+        require(mContract.status == ContractStatus.Completed, "Only Completed");
 
         delete mContract.contractHash;
         delete mContract.deliveryTrackingHash;
