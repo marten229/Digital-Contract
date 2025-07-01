@@ -373,7 +373,7 @@
 				"outputs": [
 					{
 						"internalType": "uint256",
-						"name": "",
+						"name": "amount",
 						"type": "uint256"
 					}
 				],
@@ -481,11 +481,11 @@
 			]
 		},
 		"digital_contract.sol": {
-			"keccak256": "0xb299877ca09a30386994f6558a1b4af7f14b064529fd625431b5a7cc1218aa06",
+			"keccak256": "0xfc36419f7d69c89b3e0d2f28869d14d507890e30128e98b961c0ae4a423f9757",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://36690526578980551d58d6def881ead1d9ca367e6de7ca845f0cb01adad3beea",
-				"dweb:/ipfs/QmPerzX32jDaRRDxTqZLmJAHMmJ1X3T8ryvFC2t7gcwd8G"
+				"bzz-raw://d9d7c2f97dff770cb48216eabea3f0cc57c0429217d6d5e1db6b9e6112227abd",
+				"dweb:/ipfs/QmXydt75RYxAeFqNNPhwNNan5HCgyX6ytCTDC7WxXHGsJi"
 			]
 		}
 	},
