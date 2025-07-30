@@ -1,112 +1,181 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.30;
 
-/// @dev Minimal reentrancy guard (inspired by OpenZeppelin's ReentrancyGuard)
-abstract contract ReentrancyGuard {
-    uint256 private constant _NOT_ENTERED = 1;
-    uint256 private constant _ENTERED = 2;
-    
-    uint256 private _status;
-    
-    constructor() {
-        _status = _NOT_ENTERED;
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+contract ContractManager is ReentrancyGuard {
+    enum ContractStatus {
+        Created,
+        Signed,
+        DeliverySet,
+        DeliveryConfirmed,
+        DeliveryApproved,
+        AgreementFulfilled,
+        Completed,
+        Cancelled
     }
-    
-    modifier nonReentrant() {
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
-        _status = _ENTERED;
-        _;
-        _status = _NOT_ENTERED;
-    }
-}
 
-contract DigitalContractPlatform is ReentrancyGuard {
-    enum ContractStatus { Created, Signed, Completed, Cancelled }
-
-    struct Contract {
+    struct ManagedContract {
         uint256 id;
+        uint256 amount;
         address payable creator;
         address payable counterparty;
-        string contractIPFSHash;
-        uint256 amount;
         ContractStatus status;
+        bytes32 contractHash;
+        bytes32 deliveryTrackingHash;
+        bool deliveryRequired;
     }
 
-    mapping(uint256 => Contract) public contracts;
+    address public oracle;
+    bool public oracleSet;
+
+    mapping(uint256 => ManagedContract) public contracts;
     uint256 public contractCounter;
 
-    // Mapping for funds that the counterparty can withdraw.
-    mapping(address => uint256) public pendingWithdrawals;
+    mapping(address => uint256 amount) public pendingWithdrawals;
 
     event ContractCreated(uint256 indexed contractId, address creator, address counterparty);
     event ContractSigned(uint256 indexed contractId);
-    event PaymentReleased(uint256 indexed contractId, uint256 amount);
+    event TrackingHashSet(uint256 indexed contractId, bytes32 trackingHash);
+    event DeliveryConfirmed(uint256 indexed contractId);
+    event DeliveryApproved(uint256 indexed contractId);
+    event PaymentReleased(uint256 indexed contractId, address indexed to, uint256 amount);
+    event FundsWithdrawn(uint256 indexed contractId, address indexed account, uint256 amount);
+    event ContractDeactivated(uint256 indexed contractId);
+    event OracleSet(address indexed oracle);
 
-    /// @notice Create a new contract. The creator must send the exact amount.
+    modifier onlyCreator(uint256 _contractId) {
+        require(msg.sender == contracts[_contractId].creator, "Not creator");
+        _;
+    }
+
+    modifier onlyCounterparty(uint256 _contractId) {
+        require(msg.sender == contracts[_contractId].counterparty, "Not counterparty");
+        _;
+    }
+
+    modifier onlyOracle() {
+        require(msg.sender == oracle, "Not oracle");
+        _;
+    }
+
+    function setOracle(address _oracle) public {
+        require(!oracleSet, "Oracle already set");
+        require(_oracle != address(0), "Invalid oracle");
+
+        oracle = _oracle;
+        oracleSet = true;
+        emit OracleSet(_oracle);
+    }
+
     function createContract(
-        address payable _counterparty, 
-        string memory _contractIPFSHash, 
+        address payable _counterparty,
+        bytes32 _contractHash,
         uint256 _amount
-    ) 
-        public 
-        payable 
-    {
-        require(msg.value == _amount, "Sent ether must match the contract amount");
+    ) public payable {
+        require(_counterparty != address(0), "0 addr not allowed");
+        require(msg.value == _amount, "ETH mismatch");
 
         contractCounter++;
-        contracts[contractCounter] = Contract({
-            id: contractCounter,
-            creator: payable(msg.sender),
-            counterparty: _counterparty,
-            contractIPFSHash: _contractIPFSHash,
-            amount: _amount,
-            status: ContractStatus.Created
-        });
+        ManagedContract storage newContract = contracts[contractCounter];
+        newContract.id = contractCounter;
+        newContract.amount = _amount;
+        newContract.creator = payable(msg.sender);
+        newContract.counterparty = _counterparty;
+        newContract.status = ContractStatus.Created;
+        newContract.contractHash = _contractHash;
 
         emit ContractCreated(contractCounter, msg.sender, _counterparty);
     }
 
-    /// @notice The designated counterparty signs the contract.
-    function signContract(uint256 _contractId) public {
-        Contract storage digitalContract = contracts[_contractId];
+    function signContract(uint256 _contractId) public onlyCounterparty(_contractId) {
+        ManagedContract storage mContract = contracts[_contractId];
+        require(mContract.status == ContractStatus.Created, "Not Created");
 
-        require(msg.sender == digitalContract.counterparty, "Only counterparty can sign");
-        require(digitalContract.status == ContractStatus.Created, "Contract must be in 'Created' status");
-
-        digitalContract.status = ContractStatus.Signed;
+        mContract.status = ContractStatus.Signed;
         emit ContractSigned(_contractId);
     }
 
-    /// @notice The creator confirms contract completion. Instead of immediately transferring funds,
-    /// the amount is recorded for withdrawal by the counterparty.
-    function confirmCompletion(uint256 _contractId) public nonReentrant {
-        Contract storage digitalContract = contracts[_contractId];
+    function setDeliveryTracking(uint256 _contractId, bytes32 _trackingNumberHash) public onlyCounterparty(_contractId) {
+        ManagedContract storage mContract = contracts[_contractId];
+        require(mContract.status == ContractStatus.Signed, "Not Signed");
+        require(!mContract.deliveryRequired, "Already set");
 
-        require(msg.sender == digitalContract.creator, "Only creator can confirm completion");
-        require(digitalContract.status == ContractStatus.Signed, "Contract must be signed");
+        mContract.deliveryTrackingHash = _trackingNumberHash;
+        mContract.deliveryRequired = true;
+        mContract.status = ContractStatus.DeliverySet;
 
-        digitalContract.status = ContractStatus.Completed;
-        pendingWithdrawals[digitalContract.counterparty] += digitalContract.amount;
-        emit PaymentReleased(_contractId, digitalContract.amount);
+        emit TrackingHashSet(_contractId, mContract.deliveryTrackingHash);
     }
 
-    /// @notice Allows users to withdraw funds owed to them.
-    function withdrawFunds() public nonReentrant {
-        uint256 amount = pendingWithdrawals[msg.sender];
-        require(amount > 0, "No funds to withdraw");
+    function confirmDeliveryByOracle(uint256 _contractId, bytes32 _trackingNumberHash) public onlyOracle {
+        ManagedContract storage mContract = contracts[_contractId];
+        require(mContract.status == ContractStatus.DeliverySet, "Wrong status");
+        require(mContract.deliveryRequired, "No delivery");
 
-        pendingWithdrawals[msg.sender] = 0;
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
-        require(success, "Withdrawal failed");
+        require(
+            mContract.deliveryTrackingHash == _trackingNumberHash,
+            "Hash mismatch"
+        );
+
+        mContract.status = ContractStatus.DeliveryConfirmed;
+        emit DeliveryConfirmed(_contractId);
     }
 
-    /// @notice Retrieve the current status of a contract.
+    function approveDeliveryAsCreator(uint256 _contractId) public onlyCreator(_contractId) {
+        ManagedContract storage mContract = contracts[_contractId];
+        require(mContract.status == ContractStatus.DeliveryConfirmed, "Wrong status");
+
+        mContract.status = ContractStatus.DeliveryApproved;
+        pendingWithdrawals[mContract.counterparty] = pendingWithdrawals[mContract.counterparty] + mContract.amount;
+
+        emit DeliveryApproved(_contractId);
+        emit PaymentReleased(_contractId, mContract.counterparty, mContract.amount);
+    }
+
+    function confirmCompletion(uint256 _contractId) public onlyCreator(_contractId) {
+        ManagedContract storage mContract = contracts[_contractId];
+        require(mContract.status == ContractStatus.Signed, "Not signed");
+        require(!mContract.deliveryRequired, "Delivery flow required");
+
+        mContract.status = ContractStatus.AgreementFulfilled;
+        pendingWithdrawals[mContract.counterparty] = pendingWithdrawals[mContract.counterparty] + mContract.amount;
+
+        emit PaymentReleased(_contractId, mContract.counterparty, mContract.amount);
+    }
+
+    function withdrawFundsFrom(uint256 _contractId) public nonReentrant onlyCounterparty(_contractId) {
+        ManagedContract storage mContract = contracts[_contractId];
+        require(
+            mContract.status == ContractStatus.AgreementFulfilled ||
+            mContract.status == ContractStatus.DeliveryApproved,
+            "Not withdrawable"
+        );
+
+        uint256 amount = mContract.amount;
+        require(pendingWithdrawals[msg.sender] >= amount, "No balance");
+
+        pendingWithdrawals[msg.sender] = pendingWithdrawals[msg.sender] - amount;
+
+        mContract.status = ContractStatus.Completed;
+
+        payable(msg.sender).transfer(amount);
+
+        emit FundsWithdrawn(_contractId, msg.sender, amount);
+    }
+
+    function deactivateContract(uint256 _contractId) public onlyCreator(_contractId) {
+        ManagedContract storage mContract = contracts[_contractId];
+        require(mContract.status == ContractStatus.Completed, "Only Completed");
+
+        delete mContract.contractHash;
+        delete mContract.deliveryTrackingHash;
+        mContract.status = ContractStatus.Cancelled;
+
+        emit ContractDeactivated(_contractId);
+    }
+
     function getContractStatus(uint256 _contractId) public view returns (ContractStatus) {
         return contracts[_contractId].status;
-    }
-
-    /// @notice Retrieve the IPFS hash associated with a contract.
-    function getContractIPFSHash(uint256 _contractId) public view returns (string memory) {
-        return contracts[_contractId].contractIPFSHash;
     }
 }
